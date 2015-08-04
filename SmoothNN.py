@@ -5,73 +5,12 @@ from numpy import *
 import sys
 sys.path.append('./Ref_Code')
 from loadfile import *
+from Classification_Base import *
 
 
-class GridNN:
+class SNN(Classification_Base):
 	def __init__(self):
-		self.mat = None
-		self.pos = None
-		self.wifi_list = None
-
-	def _set(self, mat, pos):
-		self.mat = mat;
-		self.pos = pos;
-
-	def _set_wifilist(self, wifi_list):
-		self.wifi_list = wifi_list;
-
-
-class SNN:
-	def __init__(self):
-		self.mesh = MeshData()
-		self.mesh_data = None;
-		self.NN_data = GridNN();
-
-	'''
-	Data Processing Part:
-		Including Smoothing and Grid-lize
-	'''
-	def _grid_smooth(self, grid):
-		pos = asarray(grid.core_pos).mean(axis=0)
-		vec = zeros(grid.wifi_vec[0].shape)
-		count = zeros(grid.wifi_vec[0].shape)
-		for v in grid.wifi_vec:
-			vec[v!=0.] += v[v!=0.]
-			count[v!=0.] += 1.;
-		vec[count != 0.] /= count[count!=0.]
-		return vec, pos
-
-	def _tidy_mesh(self):
-		L = len(self.mesh_data.grids.keys())
-		W = len(self.mesh_data.wifi_list)
-		mat = zeros((L, W))
-		pos = zeros((L, 2))
-		for i, key in enumerate(self.mesh_data.grids.keys()):
-			v, p = self._grid_smooth(self.mesh_data.grids[key])
-			mat[i,:] = v;
-			pos[i,:] = p
-		return mat, pos
-
-	def _get_NN(self):
-		m, p = self._tidy_mesh()
-		self.NN_data._set(m, p)
-		self.NN_data._set_wifilist(self.mesh_data.wifi_list)
-
-	def train(self, wp_path, wifi_path):
-		print "> Start Training"
-		self.mesh_data = self.mesh.get_by_path(wp_path, wifi_path);
-		print "> Loaded Data"
-		self._get_NN()
-		print "> Training Done"
-
-	def train_save(self, wp_path, wifi_path, save_path='SmoothNN.npz'):
-		self.train(wp_path, wifi_path)
-		savez(save_path, mat = self.NN_data.mat, pos = self.NN_data.pos, wifi_list = self.mesh_data.wifi_list)
-
-	def load_train(self, load_path='SmoothNN.npz'):
-		data = load(load_path)
-		self.NN_data._set(data['mat'],data['pos'])
-		self.NN_data._set_wifilist(data['wifi_list'])
+		Classification_Base.__init__();
 
 	'''
 	Classification Part:
@@ -86,32 +25,6 @@ class SNN:
 				return None
 		return vec
 
-	# def _classifier(self, test_vec):
-	#
-	# 	mat = self.NN_data.mat[:, test_vec!=0.]
-	# 	t_vec = test_vec[test_vec!=0.]
-	# 	test_vec = self._vec_format(t_vec)
-	# 	if test_vec is None:
-	# 		return None
-	# 	# print test_vec
-	# 	# print mat
-	#
-	#
-	# 	L = mat.shape[0]
-	# 	N = mat.shape[1]
-	# 	# /sum{x*y}
-	# 	p1 = mat.dot(test_vec.T).T[0]
-	# 	# /sum{x} * /sum{y} / N
-	# 	p2 = mat.mean(axis = 1) * test_vec.sum()
-	# 	# /sum{x^2} - (/sum{x})^2/N
-	# 	p3 = square(mat).sum(axis = 1) - (mat.sum(axis=1))**2/N
-	# 	# /sum{y^2} - (/sum{y})^2/N
-	# 	p4 = square(test_vec).sum() - (test_vec.sum())**2/N
-	# 	sim_vec = (p1 - p2) / sqrt(p3*p4)
-	# 	del p1,p2,p3,p4
-	# 	# print sim_vec
-	# 	# print "==================================================="
-	# 	return sim_vec
 
 	def _pearson(self, vec_a, vec_b):
 		N = len(vec_a);
@@ -187,14 +100,13 @@ class SNN:
 		print RMSE
 		return mean(RMSE)
 
-clf = SNN()
-# clf.train_save('./Data/Training/data_new.wp', './Data/Training/data_new.wifi')
-clf.load_train()
+# clf = SNN()
+# # clf.train_save('./Data/Training/data_new.wp', './Data/Training/data_new.wifi')
+# clf.load_train()
+#
+# print clf.clf_pos(clf.NN_data.mat[1, :])
+#
+# print clf._validate_res(clf.NN_data.mat[1, :], clf.NN_data.pos[1,:])
+# # print clf.NN_data.wifi_list
 
-print clf.clf_pos(clf.NN_data.mat[1, :])
-
-print clf._validate_res(clf.NN_data.mat[1, :], clf.NN_data.pos[1,:])
-# print clf.NN_data.wifi_list
-l = LoadWifiData()
-l.extract_with_ref('./Data/Training/data_new.wp', './Data/Training/data_new.wifi', list(clf.NN_data.wifi_list))
-print clf.validate(l.wifi_matrix, l.wp_pos)
+# print clf.validate(l.wifi_matrix, l.wp_pos)
