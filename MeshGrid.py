@@ -56,6 +56,7 @@ class MeshGrid:
 		self.X_Max = None;
 		self.Y_Min = None;
 		self.Y_Max = None;
+		self.wifi_list = None;
 		self.grids = {}; # Index: Class Grid
 
 	def _set_param(self, xmi, xma, ymi, yma):
@@ -69,6 +70,8 @@ class MeshGrid:
 			print "[Error]Replicate Result"
 		self.grids[ind] = grid
 
+	def _set_wifilist(self, wifi_list):
+		self.wifi_list = wifi_list;
 
 class MeshData:
 	def __init__(self):
@@ -100,9 +103,8 @@ class MeshData:
 		self.Y_Max = floor(self.data.wp_pos[:, 1].max()) + 1.
 		self.X_Min = floor(self.data.wp_pos[:, 0].min())
 		self.Y_Min = floor(self.data.wp_pos[:, 1].min())
-
 		self.mesh_data._set_param(self.X_Min, self.X_Max, self.Y_Min, self.Y_Max)
-
+		self.mesh_data._set_wifilist(self.data.wifi_list)
 		for i, pos in enumerate(self.data.wp_pos):
 			ind = self._get_index(pos)
 			wifi_vec = self.data.wifi_matrix[i, :]
@@ -123,8 +125,8 @@ class MeshData:
 	def get(self, data):
 		return self._get(data)
 
-	def get_by_path(self, wifi_path, wp_path):
-		loader = LoadWIfiData()
+	def get_by_path(self, wp_path, wifi_path):
+		loader = LoadWifiData()
 		train = loader.extract(wp_path, wifi_path);
 		return self._get(train)
 
