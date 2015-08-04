@@ -4,8 +4,8 @@ from SmoothNN import *
 from sklearn import svm
 from sklearn.naive_bayes import GaussianNB
 
-test_wifi_path = './Data/Training/data_new.wifi'
-test_wp_path = './Data/Training/data_new.wp'
+test_wifi_path = './Data/Training/data.wifi'
+test_wp_path = './Data/Training/data.wp'
 
 class SVM_CLF(Classification_Base):
 	def __init__(self):
@@ -75,7 +75,7 @@ nb = NB_CLF()
 nb._train()
 # nb.validate_train()
 
-nb._proba_test(nb.NN_data.mat, nb.NN_data.pos)
+# nb._proba_test(nb.NN_data.mat, nb.NN_data.pos)
 print "========================================"
 l = LoadWifiData()
 l.extract_with_ref(test_wp_path, test_wifi_path, list(nb.NN_data.wifi_list))
